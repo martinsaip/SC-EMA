@@ -27,7 +27,7 @@ myIP = tmpFolder.split(".")[0]
 myid = tmpFolder.split(".")[-1]
 
 if (high == 0) and (low == 0):
-    plt = None 
+    plt = None
 elif (low >= high):
     print("warning", "please check your plot range!")
     exit()
@@ -40,9 +40,9 @@ if pnts > 200:
 myStruc = eval(strStruc)
 
 myDict = myStruc.getElasticDict()
-f = open("../public/logfile","a")
+f = open("../public/logfile", "a")
 time1 = time.time()
-plotAreaModulus(myStruc.crystalname, myDict, saveFig = "True", plotRange = plt, tmpFolder = tmpFolder, plotPoints  = pnts )
+plotAreaModulus(myStruc.crystalname, myDict, saveFig = "True", plotRange = plt, tmpFolder = tmpFolder, plotPoints  = pnts)
 print("Area mod calculated.")
 time2 = time.time()
 #f.write("plotAreaModulus " + str(time2-time1) + "\n")
