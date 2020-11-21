@@ -1,0 +1,479 @@
+__author__ = ['titrian','aydin']
+
+import copy, sys
+from sympy import * #Symbol, nsolve, var, subs
+
+from mpmath import *
+from sympy.matrices import *
+from numpy import linalg
+
+#import crystalStack as st
+
+EPS = 1.e-8
+
+import numpy as np
+import tools.utilities as u
+
+#global crystallist, varlist
+
+#crystallist = []
+#varlist = []
+
+
+
+def __call__(self, *args, **kwargs):
+    return self.subs(kwargs)
+
+class polycrystal:
+    def __init__(self):
+
+        self.f1 = None
+        self.f2 = None
+        self.conc = 1.
+
+        self.K0 = None
+        self.mue0 = None
+
+#    def addCrystal(self, name, params):
+#        crystallist.append(str(name) + str(params))
+
+#    def removeCrystal(self, name, params):
+#        for k in crystallist:
+#            if k == str(name) + str(params):
+#                crystallist.remove(k)
+
+    def setYoungsMod(self):
+#        """ This module calculates the youngs modulus E.
+#            K0 and mue0 (bulk modulus and shear modulus) is
+#            assumed to be known
+#        """
+        if self.mue0 is None or self.K0 is None:
+            print("bulk modulus or shear modulus unknown")
+            exit()
+        self.E = 2 * self.mue0 * (1 + (3 * self.K0 - 2 * self.mue0)/(6 * self.K0 + 2 * self.mue0))
+
+    def setpoissonratio(self):
+    #        """ This module calculates the poisson's ratio v.
+    #            K0 and mue0 (bulk modulus and shear modulus) is
+    #            assumed to be known
+    #        """
+        if self.mue0 is None or self.K0 is None:
+            print("poission's ratio unknown")
+            exit()
+        self.v = (3 * self.K0 - 2 * self.mue0) / (2 * (3 * self.K0 + self.mue0 ))
+
+    def areamoduli(self):
+        if self.EE1 is None:
+            print("area moduli unknown")
+            exit()
+        if self.EE2 is None:
+            print("area moduli unknown")
+            exit()
+        if self.EE3 is None:
+            print("area moduli unknown")
+            exit()
+        if self.EE1 == 0:
+            self.A1 = "not calculated"
+        if self.EE2 == 0:
+            self.A2 = "not calculated"
+        if self.EE3 == 0:
+            self.A3 = "not calculated"
+        else:
+            self.A1 = 1 / (self.EE1 + (3*self.K0)**-1)
+            self.A2 = 1 / (self.EE2 + (3*self.K0)**-1)
+            self.A3 = 1 / (self.EE3 + (3*self.K0)**-1)
+
+    def __add__(self, other):
+        newFunction = copy.copy(self)
+        newFunction.f1 = self.f1 + other.f1
+        newFunction.f2 = self.f2 + other.f2
+        return newFunction
+
+    def setK0andMue0(self):
+        f = [lambda a, b: self.f1.subs(dict(K0=a, mue0=b)),
+             lambda a, b: self.f2.subs(dict(K0=a, mue0=b))]
+
+        k = 3; a = -1.; b = -1.;
+        while a <= EPS or b <= EPS:
+            a = 0.5; b = 0.5
+            try:
+                a, b = findroot(f, (k *0.1 , k *0.1 ))# TODO: we need an accurate initial guess
+                #print (a, b)
+            except:
+                a, b = -1.,-1.
+            k += 1
+
+            self.K0 = a#a*100.
+            self.mue0 = b#b*100.
+
+    def setConc(self, conc):
+        if conc > 1 or conc < 0:
+            print("Concentration not in the range 0,1, exiting")
+            exit()
+        self.conc = conc
+        self.f1 = self.conc * self.local_1
+        self.f2 = self.conc * self.local_2
+
+
+class cubic(polycrystal):
+    def __init__(self, C11 = None, C12 = None, C44 = None):
+        """
+        This is the cubic polycrystal class. Inherits from polycrystal class... Containing the mathematical functions for
+        """
+        if (C11 is None or C12 is None or C44 is None):
+            #u.inputError("C parameters not set")
+            exit()
+
+        self.C11 = C11/100    # Thanks to Python 3, we do not need to explicitly state "float" in these 'C's
+        self.C12 = C12/100
+        self.C44 = C44/100
+
+	correctInput, msg = self.checkCond()
+
+        if correctInput == True:
+
+            polycrystal.__init__(self)
+            self.crystalname = "cubic"
+            self.Cparamlist = (C11, C12, C44)
+#            self.addCrystal(self.crystalname, self.Cparamlist)
+
+
+            K0   = Symbol('K0')
+            mue0 = Symbol('mue0')
+
+            m_cubic = Matrix (([self.C11,self.C12,self.C12,      0,        0,       0],
+                               [self.C12,self.C11,self.C12,      0,        0,       0],
+                               [self.C12,self.C12,self.C11,      0,        0,       0],
+                               [       0,       0,       0,self.C44,       0,       0],
+                               [       0,       0,       0,       0,self.C44,       0],
+                               [       0,       0,       0,       0,       0,self.C44]))
+
+            S_cubic = linalg.inv(m_cubic)
+
+            L11 = 0
+            L12 = 0
+            L13 = 1.
+
+            L21 = 1 / sqrt(2)    # Thanks to Python 3, we do not need to explicitly state "float"
+            L22 = L21
+            L23 = 0
+
+            L31 = 1 / sqrt(3)    # Thanks to Python 3, we do not need to explicitly state "float"
+            L32 = L31
+            L33 = L31
+
+            self.EE1 = ( L11**4 + 2 * (L11**2) * (L12**2) * S_cubic [0,1] +  2 * (L11**2) * (L13**2) * S_cubic [0,2] + L12**4 * S_cubic [1,1]\
+                         + 2 * (L12**2) * (L13**2) * S_cubic [1,2] +  L13**4 * S_cubic [2,2] + (L12**2) * (L13**2) * S_cubic [3,3]\
+                         + (L11**2) * (L13**2) * S_cubic [4,4] + (L11**2) * (L12**2) * S_cubic [5,5] )
+
+            self.EE2 = ( L21**4 + 2 * (L21**2) * (L22**2) * S_cubic [0,1] +  2 * (L21**2) * (L23**2) * S_cubic [0,2] + L22**4 * S_cubic [1,1]\
+                         + 2 * (L22**2) * (L23**2) * S_cubic [1,2] +  L23**4 * S_cubic [2,2] + (L22**2) * (L23**2) * S_cubic [3,3]\
+                         + (L21**2) * (L23**2) * S_cubic [4,4] + (L21**2) * (L22**2) * S_cubic [5,5] )
+
+            self.EE3 = ( L31**4 + 2 * (L31**2) * (L32**2) * S_cubic [0,1] +  2 * (L31**2) * (L33**2) * S_cubic [0,2] + L32**4 * S_cubic [1,1]\
+                         + 2 * (L32**2) * (L33**2) * S_cubic [1,2] +  L33**4 * S_cubic [2,2] + (L32**2) * (L33**2) * S_cubic [3,3]\
+                         + (L31**2) * (L33**2) * S_cubic [4,4] + (L31**2) * (L32**2) * S_cubic [5,5] )
+
+
+            mue = self.C44
+            nue = 0.5 * (self.C11 - self.C12)
+    #        K   = K0
+            beta  = -3 * (K0 + 2 * mue0)/(5 * mue0 * (3 * K0 + 4 * mue0))
+            coeff = 1/5    # Thanks to Python 3, we do not need to explicitly state "float"
+            denom = (3 - ( self.C11 + 2 * self.C12 - 3 * K0))
+
+
+            # these are the main functions
+            self.local_1 = coeff*((2*nue - 2*mue0)/(1 - 2*beta*(nue - mue0)) + (3*mue - 3*mue0)/(1 - 2*beta*(mue - mue0)))
+            #coeff * (1/(self.C11 - self.C12 - 2* mue0) - beta)**(-1)\
+             #       + 3 * (1/(self.C44 - mue0) - 2*beta)**(-1)
+
+            self.local_2 = (3 * (self.C11 + 2 * self.C12) - 9. * K0)/denom
+
+            self.f1 = self.local_1
+            self.f2 = self.local_2
+
+            # -------------------------------  Upper & Lower Bound  ------------------------------- #
+            #[NOT IN GPa yet]
+            # BULK MODULUS
+            # 1/ Voigt
+            Kvoigt = (1/3. * (self.C11 + 2 * self.C12))   #Bulk Modulus
+
+            # 2/ Reuss = Voigt
+            Kreuss = Kvoigt
+
+            # 3/ HS-
+            KHSn = Kvoigt
+
+            # 4/ HS+
+            KHSp = Kvoigt
+
+            # SHEAR MODULUS
+    #        S11 = (self.C11 + self.C12) / ((self.C11 - self.C12) * (self.C11 + 2 * self.C12))
+    #        S12 = -(self.C12)/ ((self.C11 - self.C12) * (self.C11 + 2 * self.C12))
+    #        S44 = 1/self.C44
+            G1 = 0.5*(self.C11 - self.C12)
+            G2 = self.C44
+            K = 1/3 *(self.C11 + 2*self.C12)
+            # 1/ Voigt
+    #        Gvoigt = (1/5.*(self.C11 - self.C12 + 3 * self.C44))*100.
+            Gvoigt = 1/5.*( 2 * G1 + 3 * G2)
+
+            # 2/ Reuss
+    #        Greuss = 5 / (4 * (S11 - S12) + 3 * S44)
+    #        Greuss = (5 * (self.C11 - self.C12) * self.C44 / 4 * self.C44 + 3 * (self.C11 - self.C12))*100.
+            Greuss = (5 * G1 * G2) / (2 * G2 + 3 * G1)
+            # 3/ HS-
+            beta1 = - (3 * (K + 2 * G1)) / (5 * G1 * (3 * K + 4 * G1))
+            GHSn = G1 + 3*((5/(G2-G1))- 4*beta1)**(-1)
+            # 4/ HS+
+            beta2 = - (3 * (K + 2 * G2)) / (5 * G2 * (3 * K + 4 * G2))
+            GHSp = G2 + 2*((5/(G1-G2))- 6*beta2)**(-1)
+
+            self.voigt_bulk   = Kvoigt
+            self.reuss_bulk   = Kreuss
+            self.HS_min_bulk  = KHSn
+            self.HS_post_bulk = KHSp
+
+            self.voigt_shear   = Gvoigt
+            self.reuss_shear   = Greuss
+            self.HS_min_shear  = GHSn
+            self.HS_post_shear = GHSp
+
+
+	else:
+	    print('warning' + '<br>')
+	    print(msg)
+	    exit()
+
+    def getElasticDict(self):
+        mydict = {'C11' : self.C11*100,    # Thanks to Python 3, we do not need to explicitly state "float" in this dict
+                  'C12' : self.C12*100.
+                  'C44' : self.C44*100}
+        return mydict
+
+    def checkCond(self):
+        # Check condition
+            m_cubic = Matrix (([self.C11,self.C12,self.C12,      0,        0,       0],
+                               [self.C12,self.C11,self.C12,      0,        0,       0],
+                               [self.C12,self.C12,self.C11,      0,        0,       0],
+                               [       0,       0,       0,self.C44,       0,       0],
+                               [       0,       0,       0,       0,self.C44,       0],
+                               [       0,       0,       0,       0,       0,self.C44]))
+
+            cubic_det         = det(m_cubic)
+            cubic_condition_1 = self.C11 + 2 * self.C12
+            cubic_condition_2 = self.C44
+            cubic_condition_3 = self.C11 - self.C12
+
+            if cubic_condition_1 > 0:
+                pass
+            else:
+                #u.inputError('Please enter right value: C11 + 2 C12 > 0')
+                return False, 'Please enter right value: C11 + 2 C12 > 0 (cubic phase)'
+            if cubic_condition_2 > 0:
+                pass
+            else:
+                #u.inputError('Please enter right value: C44 > 0')
+                return False, 'Please enter right value: C44 > 0 (cubic phase)'
+
+            if cubic_condition_3 > 0:
+                pass
+            else:
+                #u.inputError('Please enter right value: C11 - C12 > 0')
+                return False, 'Please enter right value: C11 - C12 > 0 (cubic phase)'
+
+            return True, ''
+
+
+class tetragonal(polycrystal):
+    def __init__(self, C11 = None, C12 = None, C13 = None, C33 = None, C44 = None, C66 = None):
+
+        if (C11 is None or C12 is None or C13 is None or C33 is None or C44 is None or C66 is None):
+            u.inputError("C parameters not set")
+            exit()
+
+        self.C11 = C11/100    # Thanks to Python 3, we do not need to explicitly state "float" in these 'C's
+        self.C12 = C12/100
+        self.C13 = C13/100
+        self.C33 = C33/100
+        self.C44 = C44/100
+        self.C66 = C66/100
+
+        correctInput, msg = self.checkCond()
+
+        if correctInput == True:
+
+            polycrystal.__init__(self)
+    #       self.conc = 1
+            self.crystalname = "tetragonal"
+            self.Cparamlist = (C11, C12, C13, C33, C44, C66)
+#            self.addCrystal(self.crystalname, self.Cparamlist)
+
+
+            K0   = Symbol('K0')
+            mue0 = Symbol('mue0')
+
+            m_tetragonal = Matrix (([self.C11,self.C12,self.C13,       0,       0,       0],
+                                    [self.C12,self.C11,self.C13,       0,       0,       0],
+                                    [self.C13,self.C13,self.C33,       0,       0,       0],
+                                    [       0,       0,       0,self.C44,       0,       0],
+                                    [       0,       0,       0,       0,self.C44,       0],
+                                    [       0,       0,       0,       0,       0,self.C66]))
+
+            S_tetragonal = linalg.inv(m_tetragonal)
+            #        print m_tetragonal
+            #        print S_tetragonal
+            #        print S_tetragonal [0,5]
+
+            L11 = 0
+            L12 = 0
+            L13 = 1.
+
+            L21 = 1 / sqrt(2)    # Thanks to Python 3, we do not need to explicitly state "float"
+            L22 = L21
+            L23 = 0
+
+            L31 = 1 / sqrt(3)    # Thanks to Python 3, we do not need to explicitly state "float"
+            L32 = L31
+            L33 = L31
+
+            self.EE1 = ( L11**4 + 2 * (L11**2) * (L12**2) * S_tetragonal [0,1] +  2 * (L11**2) * (L13**2) * S_tetragonal [0,2] + L12**4 * S_tetragonal [1,1]\
+                         + 2 * (L12**2) * (L13**2) * S_tetragonal [1,2] +  L13**4 * S_tetragonal [2,2] + (L12**2) * (L13**2) * S_tetragonal [3,3]\
+                         + (L11**2) * (L13**2) * S_tetragonal [4,4] + (L11**2) * (L12**2) * S_tetragonal [5,5] )
+
+            self.EE2 = ( L21**4 + 2 * (L21**2) * (L22**2) * S_tetragonal [0,1] +  2 * (L21**2) * (L23**2) * S_tetragonal [0,2] + L22**4 * S_tetragonal [1,1]\
+                         + 2 * (L22**2) * (L23**2) * S_tetragonal [1,2] +  L23**4 * S_tetragonal [2,2] + (L22**2) * (L23**2) * S_tetragonal [3,3]\
+                         + (L21**2) * (L23**2) * S_tetragonal [4,4] + (L21**2) * (L12**2) * S_tetragonal [5,5] )
+
+            self.EE3 = ( L31**4 + 2 * (L31**2) * (L32**2) * S_tetragonal [0,1] +  2 * (L31**2) * (L33**2) * S_tetragonal [0,2] + L32**4 * S_tetragonal [1,1]\
+                         + 2 * (L32**2) * (L33**2) * S_tetragonal [1,2] +  L33**4 * S_tetragonal [2,2] + (L32**2) * (L33**2) * S_tetragonal [3,3]\
+                         + (L31**2) * (L33**2) * S_tetragonal [4,4] + (L31**2) * (L32**2) * S_tetragonal [5,5] )
+
+            Knue     = 1./9 * ( self.C33 + 2 * (self.C11 + self.C12) + 4 * self.C13)
+            M        = self.C11 + self.C12 + 2 * self.C33 - 4 * self.C13
+            C2       = self.C33 * (self.C11 + self.C12) - 2 * self.C13**2
+            psi      = self.C11 + self.C12 + self.C33 - 3 * K0 - 2 * mue0
+            deltakk  = C2 - K0 * ( M - 6 * mue0 ) - 6 * mue0 * Knue
+            sigma    = 9 * Knue- 9./2 * K0 - 6 * mue0 + 3./2 * self.C33 - 6 * self.C13
+            beta     = -3 * (K0 + 2 * mue0)/(5 * mue0 * (3 * K0 + 4 * mue0))
+            eta      = -3./(3 * K0 + 4 * mue0)
+            gamma    = 1./9 * (eta - 3 * beta)
+
+            denom1 = (1 - beta * psi - 9 * gamma *(Knue - K0) + 1./3 * eta * beta * deltakk)
+            denom2 = 2 *(1 - beta *(self.C11 - self.C12 -2 * mue0))
+            coeff = 1 / 15.
+
+            fone = M - 6 * mue0
+            ftwo = (self.C11 - self.C12 - 2 * mue0)*(3 - 2 * beta * sigma - 27 * gamma * (Knue - K0) - 2 * eta * beta * deltakk) - eta * deltakk
+
+            fa = (fone + ftwo) / (denom2 * denom1)
+            fb = 6 * (self.C44 - mue0) / (1 - 2 * beta * (self.C44 - mue0))
+            fc = 3 * (self.C66 - mue0) / (1 - 2 * beta * (self.C66 - mue0))
+
+            self.local_1 = coeff *( fa + fb + fc )
+            self.local_2 = (3 * (Knue - K0) - beta * deltakk)/denom1 #/(1 - beta * psi - 9 * gamma *(Knue -K0)+ 1./3 * eta * beta * deltakk)
+
+            self.f1 = self.local_1
+            self.f2 = self.local_2
+
+            # -------------------------------  Upper & Lower Bound  ------------------------------- #
+
+            # Bulk Modulus
+            G3 = 0.5 * (self.C11 - self.C12)
+
+            G_low  = [self.C44, self.C66, G3, C2 / (6* Knue)]
+            G1 = max(G_low)
+
+            G_up = [self.C44, self.C66, G3, (1/6 * M)]    # Thanks to Python 3, we do not need to explicitly state "float"
+            G2 = min(G_up)
+            if abs(M - 6 * G2) < EPS: # Avoid division by zero. Take the next larger number
+                G_up.sort()
+                G2 = G_up[1]
+
+            K1 = (C2 - 6 * G1 * Knue) / (M * 6 * G1)
+            K2 = (C2 - 6 * G2 * Knue) / (M * 6 * G2)
+
+            beta1 = -3 * (K1 + 2 * G1) / (5 * G1 * (3 * K1 + 4 * G1))
+            beta2 = -3 * (K2 + 2 * G2) / (5 * G2 * (3 * K2 + 4 * G2))
+
+            delta1 = C2 - K1*(M - 6*G1) - 6*G1*Knue
+            delta2 = C2 - K2*(M - 6*G2) - 6*G2*Knue
+
+
+            # 1/ Voigt
+            Kvoigt = 1/9. * (2 * (self.C11 + self.C12) + self.C33 + 4 * self.C13)
+
+            # 2/ Reuss
+            Kreuss = C2 / M
+
+            # 3/ HS-
+            KHSn = K1 + ((Knue - K1) -1/3. * beta1 * delta1 )  / ( 1 - 1/3.*beta1 * (M - 6*G1))
+
+            # 4/ HS+
+            KHSp = K2 + ((Knue - K2) -1/3. * beta2 * delta2 )  / ( 1 - 1/3.*beta2 * (M - 6*G2))
+
+
+            # Shear Modulus
+
+            eta1      = -3/(3 * K1 + 4 * G1)    # Thanks to Python 3, we do not need to explicitly state "float"
+            eta2      = -3/(3 * K2 + 4 * G2)    # Thanks to Python 3, we do not need to explicitly state "float"
+
+            gamma1    = 1/9 * (eta1 - 3 * beta1)    # Thanks to Python 3, we do not need to explicitly state "float"
+            gamma2    = 1/9 * (eta2 - 3 * beta2)    # Thanks to Python 3, we do not need to explicitly state "float"
+
+
+            sigma1    = 9 * Knue- 9./2 * K1 - 6 * G1 + 3./2 * self.C33 - 6 * self.C13
+            sigma2    = 9 * Knue- 9./2 * K2 - 6 * G2 + 3./2 * self.C33 - 6 * self.C13
+
+            psi1      = self.C11 + self.C12 + self.C33 - 3 * K1 - 2 * G1
+            psi2      = self.C11 + self.C12 + self.C33 - 3 * K2 - 2 * G2
+
+            a1 = (M - 6 * G1 + (self.C11 - self.C12 - 2*G1) * (3 - 2 * beta1 * sigma1 - 27 * gamma1 * (Knue - K1) - 2 * eta1 * beta1 * delta1) - eta1 * delta1) /\
+                 (2 * (1 - beta1 * (self.C11 - self.C12 - 2 * G1)) * (1 - beta1 * psi1 - 9 * gamma1 * (Knue - K1) + 1/3. * eta1 * beta1 * delta1))
+
+            a2 = (M - 6 * G2 + (self.C11 - self.C12 - 2*G2) * (3 - 2 * beta2 * sigma2 - 27 * gamma2 * (Knue - K2) - 2 * eta2 * beta2 * delta2) - eta2 * delta2) /\
+                 (2 * (1 - beta2 * (self.C11 - self.C12 - 2 * G2)) * (1 - beta2 * psi2 - 9 * gamma2 * (Knue - K2) + 1/3. * eta2 * beta2 * delta2))
+
+            b1 = 6 * (C44 - G1) / (1 - 2 * beta1 * (C44 - G1))
+            b2 = 6 * (C44 - G2) / (1 - 2 * beta2 * (C44 - G2))
+
+            c1 = 3 * (C66 - G1) / (1 - 2 * beta1 * (C66 - G1))
+            c2 = 3 * (C66 - G2) / (1 - 2 * beta2 * (C66 - G2))
+
+            B21 = 1/15. * (a1 + b1 + c1)
+            B22 = 1/15. * (a2 + b2 + c2)
+
+            # 1/ Voigt
+            Gvoigt = 1/30.* (M + 3 * self.C11 - 3 * self.C12 + 12 * self.C44 + 6 * self.C66)
+
+            # 2/ Reuss
+            Greuss = 15 * (18 * Knue /C2 + 6 / (self.C11 - self.C12) + 6 / self.C44 + 3 / self.C66)**-1
+
+            # 3/ HS-
+            GHSp = G1 + B21 / (1 + 2 * beta1 * B21)
+
+            # 4/ HS+
+            GHSn = G2 + B22 / (1 + 2 * beta2 * B22)
+
+            self.voigt_bulk   = Kvoigt
+            self.reuss_bulk   = Kvoigt
+            self.HS_min_bulk  = KHSn
+            self.HS_post_bulk = KHSp
+
+            self.voigt_shear   = Gvoigt
+            self.reuss_shear   = Greuss
+            self.HS_min_shear  = KHSn
+            self.HS_post_shear = KHSp
+
+
+    else:
+        print('warning' + '<br>')
+        print(msg)
+        exit()
+
+    def getElasticDict(self):
+        mydict = {'C11' : self.C11*100,    # Thanks to Python 3, we do not need to explicitly state "float" in these 'C's
+                  'C12' : self.C12*100,
+                  'C44' : self.C44*100}
+        return mydict
