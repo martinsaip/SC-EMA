@@ -1,4 +1,5 @@
-__author__ = ['titrian','aydin']
+__author__ = ['titrian', 'aydin', 'Martin Saip']
+# Conversion to Python >= 3.10, corrections, improvements & refactoring done by Martin Saip in 2020 & 2021.
 
 import copy, sys
 from sympy import * #Symbol, nsolve, var, subs
@@ -108,7 +109,7 @@ class polycrystal:
 
     def setConc(self, conc):
         if conc > 1 or conc < 0:
-            print("Concentration not in the range 0,1, exiting")
+            print("Concentration not in the range <0, 1> => exiting!")
             exit()
         self.conc = conc
         self.f1 = self.conc * self.local_1
@@ -270,18 +271,18 @@ class cubic(polycrystal):
                 pass
             else:
                 #u.inputError('Please enter right value: C11 + 2 C12 > 0')
-                return False, 'Please enter right value: C11 + 2 C12 > 0 (cubic phase)'
+                return False, 'Please enter right value: C11 + 2 C12 > 0 (cubic phase).'
             if cubic_condition_2 > 0:
                 pass
             else:
                 #u.inputError('Please enter right value: C44 > 0')
-                return False, 'Please enter right value: C44 > 0 (cubic phase)'
+                return False, 'Please enter right value: C44 > 0 (cubic phase).'
 
             if cubic_condition_3 > 0:
                 pass
             else:
                 #u.inputError('Please enter right value: C11 - C12 > 0')
-                return False, 'Please enter right value: C11 - C12 > 0 (cubic phase)'
+                return False, 'Please enter right value: C11 - C12 > 0 (cubic phase).'
 
             return True, ''
 
@@ -290,7 +291,7 @@ class tetragonal(polycrystal):
     def __init__(self, C11 = None, C12 = None, C13 = None, C33 = None, C44 = None, C66 = None):
 
         if (C11 is None or C12 is None or C13 is None or C33 is None or C44 is None or C66 is None):
-            u.inputError("C parameters not set")
+            u.inputError("C parameters not set!")
             exit()
 
         self.C11 = C11/100    # Thanks to Python 3, we do not need to explicitly state "float" in these 'C's
@@ -507,27 +508,27 @@ class tetragonal(polycrystal):
             pass
         else:
     #            u.inputError('Please enter right value: C11 > 0')
-            return False,'Please enter right value: C11 > 0 (tetragonal phase)'
+            return False, 'Please enter such a value that C11 > 0 (tetragonal phase).'
         if tetragonal_condition_2 > 0:
             pass
         else:
     #            u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12), (C12, C11) )')
-            return False,'Please enter right value: det (matrix A) > 0!A =  [(C11, C12),(C12, C11)] (tetragonal phase)'
+            return False, 'Please enter such a value that det (matrix A) > 0!A =  [(C11, C12),(C12, C11)] (tetragonal phase).'
         if tetragonal_condition_3 > 0:
             pass
         else:
     #            u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12, C13), (C12, C11, C13), (C13, C13, C33) )')
-            return False,'Please enter right value: det (matrix A) > 0! A = [(C11, C12, C13), (C12, C11, C13), (C13, C13, C33)] (tetragonal phase)'
+            return False, 'Please enter such a value that det (matrix A) > 0! A = [(C11, C12, C13), (C12, C11, C13), (C13, C13, C33)] (tetragonal phase).'
         if tetragonal_condition_4 > 0:
             pass
         else:
     #            u.inputError('Please enter right value: C44 > 0')
-            return False,'Please enter right value: C44 > 0 (tetragonal phase)'
+            return False, 'Please enter such a value that C44 > 0 (tetragonal phase).'
         if tetragonal_condition_5 > 0:
             pass
         else:
     #            u.inputError('Please enter right value: C66 > 0')
-            return False,'Please enter right value: C66 > 0 (tetragonal phase)'
+            return False, 'Please enter such a value that C66 > 0 (tetragonal phase).'
 
         return True, ''
 
@@ -661,12 +662,12 @@ class trigonal(polycrystal):
 #                print 'D1 accepted'
                 pass
             else:
-                print('D1 is False --> Please enter the right value')
+                print('D1 is False --> Please enter a value corresponding to a mechanically stable system!')
             if G2 > D1:
 #                print 'D2 accepted'
                 pass
             else:
-                print('D2 is False --> Please enter the right value')
+                print('D2 is False --> Please enter a value corresponding to a mechanically stable system!')
 
             self.voigt_bulk   = Kvoigt
             self.reuss_bulk   = Kvoigt
@@ -730,32 +731,32 @@ class trigonal(polycrystal):
                 pass
             else:
 #                u.inputError('Please enter right value: C11 > 0')
-                return False,'Please enter right value: C11 > 0 (tigonal phase)'
+                return False, 'Please enter such a value that C11 > 0 (trigonal phase).'
             if trigonal_condition_2 > 0:
                 pass
             else:
 #                u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12), (C12, C11) )')
-                return False,'Please enter right value: det (matrix A) > 0!  A = [(C11, C12), (C12, C11)] (tigonal phase)'
+                return False, 'Please enter such a value that det (matrix A) > 0!  A = [(C11, C12), (C12, C11)] (trigonal phase).'
             if trigonal_condition_3 > 0:
                 pass
             else:
 #                u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12, C13), (C12, C11, C13), (C13, C13, C33) )')
-                return False,'Please enter right value: det (matrix A) > 0!  A = [(C11, C12, C13), (C12, C11, C13), (C13, C13, C33)] (tigonal phase)'
+                return False, 'Please enter such a value that det (matrix A) > 0!  A = [(C11, C12, C13), (C12, C11, C13), (C13, C13, C33)] (trigonal phase).'
             if trigonal_condition_4 > 0:
                 pass
             else:
 #                u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12, C13, C14), (C12, C11, C13, -C14), (C13, C13, C33, 0), (C14, -C14, 0, C44) )')
-                return False,'Please enter right value: det (matrix A) > 0! A = [(C11, C12, C13, C14), (C12, C11, C13, -C14), (C13, C13, C33, 0), (C14, -C14, 0, C44)] (tigonal phase)'
+                return False, 'Please enter such a value that det (matrix A) > 0! A = [(C11, C12, C13, C14), (C12, C11, C13, -C14), (C13, C13, C33, 0), (C14, -C14, 0, C44)] (trigonal phase).'
             if trigonal_condition_5 > 0:
                 pass
             else:
 #                u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12, C13, C14, 0), (C12, C11, C13, -C14, 0), (C13, C13, C33, 0, 0), (C14, -C14, 0, C44, 0), (0, 0, 0, 0, C44) )')
-                return False,'Please enter right value: det (matrix A) > 0!  A = [(C11, C12, C13, C14, 0), (C12, C11, C13, -C14, 0), (C13, C13, C33, 0, 0), (C14, -C14, 0, C44, 0), (0, 0, 0, 0, C44)] (tigonal phase)'
+                return False, 'Please enter such a value that det (matrix A) > 0!  A = [(C11, C12, C13, C14, 0), (C12, C11, C13, -C14, 0), (C13, C13, C33, 0, 0), (C14, -C14, 0, C44, 0), (0, 0, 0, 0, C44)] (trigonal phase).'
             if trigonal_condition_6 > 0:
                 pass
             else:
 #                u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12, C13, C14, 0, 0), (C12, C11, C13, -C14, 0, 0), (C13, C13, C33, 0, 0, 0), (C14, -C14, 0, C44, 0, 0), (0, 0, 0, 0, C44, 0), (0, 0, 0, 0, 0, C66) )')
-                return False,'Please enter right value: det (matrix A) > 0!  A = [(C11, C12, C13, C14, 0, 0), (C12, C11, C13, -C14, 0, 0), (C13, C13, C33, 0, 0, 0), (C14, -C14, 0, C44, 0, 0), (0, 0, 0, 0, C44, 0), (0, 0, 0, 0, 0, C66)] (tigonal phase)'
+                return False, 'Please enter such a value that det (matrix A) > 0!  A = [(C11, C12, C13, C14, 0, 0), (C12, C11, C13, -C14, 0, 0), (C13, C13, C33, 0, 0, 0), (C14, -C14, 0, C44, 0, 0), (0, 0, 0, 0, C44, 0), (0, 0, 0, 0, 0, C66)] (trigonal phase).'
 
             return True, ''
 
@@ -941,32 +942,32 @@ class hexagonal(polycrystal):
                 pass
             else:
 #                u.inputError('Please enter right value: C11 > 0')
-                return False,'Please enter right value: C11 > 0 (hexagonal phase)'
+                return False, 'Please enter such a value that C11 > 0 (hexagonal phase).'
             if hexagonal_condition_2 > 0:
                 pass
             else:
 #                u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12), (C12, C11) )')
-                return False,'Please enter right value: det (matrix A) > 0! A = [(C11, C12), (C12, C11)] (hexagonal phase)'
+                return False, 'Please enter such a value that det (matrix A) > 0! A = [(C11, C12), (C12, C11)] (hexagonal phase).'
             if hexagonal_condition_3 > 0:
                 pass
             else:
 #                u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12, C13), (C12, C11, C13), (C13, C13, C33) )')
-                return False,'Please enter right value: det (matrix A) > 0!  A = [(C11, C12, C13), (C12, C11, C13), (C13, C13, C33)] (hexagonal phase)'
+                return False, 'Please enter such a value that det (matrix A) > 0!  A = [(C11, C12, C13), (C12, C11, C13), (C13, C13, C33)] (hexagonal phase).'
             if hexagonal_condition_4 > 0:
                 pass
             else:
 #                u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12, C13, 0), (C12, C11, C13, 0), (C13, C13, C33, 0), (0, 0, 0, C55) )')
-                return False,'Please enter right value: det (matrix A) > 0!  A = [(C11, C12, C13, 0), (C12, C11, C13, 0), (C13, C13, C33, 0), (0, 0, 0, C55)] (hexagonal phase)'
+                return False, 'Please enter such a value that det (matrix A) > 0!  A = [(C11, C12, C13, 0), (C12, C11, C13, 0), (C13, C13, C33, 0), (0, 0, 0, C55)] (hexagonal phase).'
             if hexagonal_condition_5 > 0:
                 pass
             else:
 #                u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12, C13, 0, 0), (C12, C11, C13, 0, 0), (C13, C13, C33, 0, 0), (0, 0, 0, C55, 0), (0, 0, 0, 0, C55) )')
-                return False,'Please enter right value: det (matrix A) > 0! A = [(C11, C12, C13, 0, 0), (C12, C11, C13, 0, 0), (C13, C13, C33, 0, 0), (0, 0, 0, C55, 0), (0, 0, 0, 0, C55)] (hexagonal phase)'
+                return False, 'Please enter such a value that det (matrix A) > 0! A = [(C11, C12, C13, 0, 0), (C12, C11, C13, 0, 0), (C13, C13, C33, 0, 0), (0, 0, 0, C55, 0), (0, 0, 0, 0, C55)] (hexagonal phase).'
             if hexagonal_condition_6 > 0:
                 pass
             else:
 #                u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12, C13, 0, 0, 0), (C12, C11, C13, 0, 0, 0), (C13, C13, C33, 0, 0, 0), (0, 0, 0, C55, 0, 0), (0, 0, 0, 0, C55, 0), (0, 0, 0, 0, 0, C66) )')
-                return False,'Please enter right value: det (matrix A) > 0!  A = [(C11, C12, C13, 0, 0, 0), (C12, C11, C13, 0, 0, 0), (C13, C13, C33, 0, 0, 0), (0, 0, 0, C55, 0, 0), (0, 0, 0, 0, C55, 0), (0, 0, 0, 0, 0, C66)] (hexagonal phase)'
+                return False, 'Please enter such a value that det (matrix A) > 0!  A = [(C11, C12, C13, 0, 0, 0), (C12, C11, C13, 0, 0, 0), (C13, C13, C33, 0, 0, 0), (0, 0, 0, C55, 0, 0), (0, 0, 0, 0, C55, 0), (0, 0, 0, 0, 0, C66)] (hexagonal phase).'
 
             return True, ''
 
@@ -976,7 +977,7 @@ class orthorombic(polycrystal):
                  C23 = None, C33 = None, C44 = None, C55 = None, C66 = None):
 
         if (C11 is None or C12 is None or C13 is None or C22 is None or C23 is None or C33 is None or C44 is None or C55 is None or C66 is None):
-            u.inputError("C parameters not set")
+            u.inputError("C parameters not set!")
             exit()
 
         self.C11 = C11/100    # Thanks to Python 3, we do not need to explicitly state "float" in these 'C's
@@ -1177,31 +1178,31 @@ def checkCond(self):
             pass
         else:
 #                u.inputError('Please enter right value: C11 > 0')    # It seems to me that this print statement should not end with a whitespace like it did before!
-            return False,'Please enter right value: C11 > 0 (orthorombic phase)'
+            return False, 'Please enter such a value that C11 > 0 (orthorombic phase).'
         if orthorombic_condition_2 > 0:
             pass
         else:
 #                u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12), (C12, C22) )')
-            return False,'Please enter right value: det (matrix A) > 0!  A = [(C11, C12), (C12, C22)] (orthorombic phase)'
+            return False, 'Please enter such a value that det (matrix A) > 0!  A = [(C11, C12), (C12, C22)] (orthorombic phase).'
         if orthorombic_condition_3 > 0:
             pass
         else:
 #                u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12, C13), (C12, C22, C23), (C13, C23, C33) )')
-            return False,'Please enter right value: det (matrix A) > 0!  A = [(C11, C12, C13), (C12, C22, C23), (C13, C23, C33)] (orthorombic phase)'
+            return False, 'Please enter such a value that det (matrix A) > 0!  A = [(C11, C12, C13), (C12, C22, C23), (C13, C23, C33)] (orthorombic phase).'
         if orthorombic_condition_4 > 0:
             pass
         else:
 #                u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12, C13, 0), (C12, C22, C23, 0), (C13, C23, C33, 0), (0, 0, 0, C44) )')
-            return False,'Please enter right value: det (matrix A) > 0!  A = [(C11, C12, C13, 0), (C12, C22, C23, 0), (C13, C23, C33, 0), (0, 0, 0, C44)] (orthorombic phase)'
+            return False, 'Please enter such a value that det (matrix A) > 0!  A = [(C11, C12, C13, 0), (C12, C22, C23, 0), (C13, C23, C33, 0), (0, 0, 0, C44)] (orthorombic phase).'
         if orthorombic_condition_5 > 0:
             pass
         else:
 #                u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12, C13, 0, 0), (C12, C22, C23, 0, 0), (C13, C23, C33, 0, 0), (0, 0, 0, C44, 0), (0, 0, 0, 0, C55) )')
-            return False,'Please enter right value: det (matrix A) > 0!  A = [(C11, C12, C13, 0, 0), (C12, C22, C23, 0, 0), (C13, C23, C33, 0, 0), (0, 0, 0, C44, 0), (0, 0, 0, 0, C55)] (orthorombic phase)'
+            return False, 'Please enter such a value that det (matrix A) > 0!  A = [(C11, C12, C13, 0, 0), (C12, C22, C23, 0, 0), (C13, C23, C33, 0, 0), (0, 0, 0, C44, 0), (0, 0, 0, 0, C55)] (orthorombic phase).'
         if orthorombic_condition_6 > 0:
             pass
         else:
 #                u.inputError('Please enter right value: det (matrix A) > 0!\n A = ( (C11, C12, C13, 0, 0, 0), (C12, C22, C23, 0, 0, 0), (C13, C23, C33, 0, 0, 0), (0, 0, 0, C44, 0, 0), (0, 0, 0, 0, C55, 0), (0, 0, 0, 0, 0, C66) )')
-            return False,'Please enter right value: det (matrix A) > 0!  A = [(C11, C12, C13, 0, 0, 0), (C12, C22, C23, 0, 0, 0), (C13, C23, C33, 0, 0, 0), (0, 0, 0, C44, 0, 0), (0, 0, 0, 0, C55, 0), (0, 0, 0, 0, 0, C66)] (orthorombic phase)'
+            return False, 'Please enter such a value that det (matrix A) > 0!  A = [(C11, C12, C13, 0, 0, 0), (C12, C22, C23, 0, 0, 0), (C13, C23, C33, 0, 0, 0), (0, 0, 0, C44, 0, 0), (0, 0, 0, 0, C55, 0), (0, 0, 0, 0, 0, C66)] (orthorombic phase).'
 
         return True, ''
