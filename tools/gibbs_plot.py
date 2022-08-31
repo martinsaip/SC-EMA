@@ -107,19 +107,19 @@ def plot3phase(concList = None, valList = None, labelA = None, labelB = None, la
         if type == "bulkMod":
             if tmpFolder == None:
                 plt.savefig("../public/3phase/Bulk_modulus.png")
-	    else:
-		plt.savefig("../public/"+tmpFolder+"/3phase/Bulk_modulus.png")	
+            else:
+                plt.savefig("../public/"+tmpFolder+"/3phase/Bulk_modulus.png")
         elif type == "shearMod":
-	    if tmpFolder == None:
-		plt.savefig("../public/3phase/Shear_modulus.png")
-	    else:
-		plt.savefig("../public/"+tmpFolder+"/3phase/Shear_modulus.png")
+            if tmpFolder == None:
+                plt.savefig("../public/3phase/Shear_modulus.png")
+            else:
+                plt.savefig("../public/"+tmpFolder+"/3phase/Shear_modulus.png")
         elif type == 'youngsMod':
-	    if tmpFolder == None:
-		plt.savefig("../public/3phase/Youngs_modulus.png")
-	    else:
-		plt.savefig("../public/"+tmpFolder+"/3phase/Youngs_modulus.png")
-		
+            if tmpFolder == None:
+                plt.savefig("../public/3phase/Youngs_modulus.png")
+            else:
+                plt.savefig("../public/"+tmpFolder+"/3phase/Youngs_modulus.png")
+
     else:
         plt.show()
         plt.draw()
@@ -247,7 +247,7 @@ def plotAreaModulus(crystalType = None, vals = None, saveFig = "False", plotRang
     #print "I inverted the matrix", time2 - time1
 
     if plotPoints == None:
-	plotPoints = 50
+        plotPoints = 50
     [x,y,z] = sphere(plotPoints)
     x = np.asarray(x)
     y = np.asarray(y)
@@ -377,11 +377,11 @@ def plotAreaModulus(crystalType = None, vals = None, saveFig = "False", plotRang
 
     # scale arragement (lifang calculation -200 & 200 )
     if plotRange == None:
-	lowerRange = np.min([np.min(x),np.min(y),np.min(z)])*1.1
-	upperRange = np.max([np.max(x),np.max(y),np.max(z)])*1.1
+        lowerRange = np.min([np.min(x),np.min(y),np.min(z)])*1.1
+        upperRange = np.max([np.max(x),np.max(y),np.max(z)])*1.1
     else:
-	lowerRange = np.float64(-plotRange[1])
-	upperRange = np.float64(plotRange[1])
+        lowerRange = np.float64(-plotRange[1])
+        upperRange = np.float64(plotRange[1])
 
 #    cls_old = getColors(x,y,z)
     cls = getColors(x,y,z)
@@ -392,10 +392,10 @@ def plotAreaModulus(crystalType = None, vals = None, saveFig = "False", plotRang
 #    MaxVal = 230.0 #max(cls)
 #    MinVal = 50.0 #min(cls)
     if plotRange == None:
-    	MaxVal = max(cls)
-    	MinVal = min(cls)
+        MaxVal = max(cls)
+        MinVal = min(cls)
     else:
-	MinVal = np.float64(plotRange[0])
+        MinVal = np.float64(plotRange[0])
         MaxVal = np.float64(plotRange[1])
 
     #cls = (cls - min(cls))/(max(cls)-min(cls))#/np.max(cls)
@@ -417,11 +417,11 @@ def plotAreaModulus(crystalType = None, vals = None, saveFig = "False", plotRang
     m = cm.ScalarMappable(cmap=cm.gist_rainbow)
     
     if plotRange == None:
-    	cls = cls * (MaxVal - MinVal) + MinVal
+        cls = cls * (MaxVal - MinVal) + MinVal
     else:
-	mycls = np.ndarray(shape = (len(cls),len(cls)))
-	for k in range(len(cls)):
-	   mycls[k,:] = k * 1.0 / (len(cls)-1)
+        mycls = np.ndarray(shape = (len(cls),len(cls)))
+        for k in range(len(cls)):
+           mycls[k,:] = k * 1.0 / (len(cls)-1)
         cls = mycls * (MaxVal - MinVal) + MinVal
     m.set_array(cls) 
     fig.colorbar(m, shrink = 0.8)
@@ -480,7 +480,7 @@ def plotYoungsModulus(crystalType = None, vals = None, saveFig = "False", plotRa
     S = np.linalg.inv(mat)
 
     if plotPoints == None:
-	plotPoints = 50
+        plotPoints = 50
 
     [x,y,z] = sphere(plotPoints)
     x = np.asarray(x)
@@ -491,11 +491,11 @@ def plotYoungsModulus(crystalType = None, vals = None, saveFig = "False", plotRa
 
     # scale arragement (lifang calculation -200 & 200 )
     if plotRange == None:
-	lowerRange = np.min([np.min(x),np.min(y),np.min(z)])*1.1
-	upperRange = np.max([np.max(x),np.max(y),np.max(z)])*1.1
+        lowerRange = np.min([np.min(x),np.min(y),np.min(z)])*1.1
+        upperRange = np.max([np.max(x),np.max(y),np.max(z)])*1.1
     else:
-	lowerRange = np.float64(-plotRange[1])
-	upperRange = np.float64(plotRange[1])
+        lowerRange = np.float64(-plotRange[1])
+        upperRange = np.float64(plotRange[1])
 
 #    cls_old = getColors(x,y,z)
     cls = getColors(x,y,z)
@@ -506,10 +506,10 @@ def plotYoungsModulus(crystalType = None, vals = None, saveFig = "False", plotRa
 #    MaxVal = 230.0 #max(cls)
 #    MinVal = 50.0 #min(cls)
     if plotRange == None:
-    	MaxVal = max(cls)
-    	MinVal = min(cls)
+        MaxVal = max(cls)
+        MinVal = min(cls)
     else:
-	MinVal = np.float64(plotRange[0])
+        MinVal = np.float64(plotRange[0])
         MaxVal = np.float64(plotRange[1])
 
     #cls = (cls - min(cls))/(max(cls)-min(cls))#/np.max(cls)
@@ -533,9 +533,9 @@ def plotYoungsModulus(crystalType = None, vals = None, saveFig = "False", plotRa
     if plotRange == None:
     	cls = cls * (MaxVal - MinVal) + MinVal
     else:
-	mycls = np.ndarray(shape = (len(cls),len(cls)))
-	for k in range(len(cls)):
-	   mycls[k,:] = k * 1.0 / (len(cls)-1)
+        mycls = np.ndarray(shape = (len(cls),len(cls)))
+        for k in range(len(cls)):
+           mycls[k,:] = k * 1.0 / (len(cls)-1)
         cls = mycls * (MaxVal - MinVal) + MinVal
     m.set_array(cls) 
     fig.colorbar(m, shrink = 0.8)
@@ -553,11 +553,11 @@ def plotYoungsModulus(crystalType = None, vals = None, saveFig = "False", plotRa
 
 
     if saveFig == "True":
-	try:
-	   os.remove("../public/" + str(tmpFolder) + "/" + str(crystalType) + ".png")
-	except OSError:
-	   pass
-	plt.savefig("../public/" + str(tmpFolder) + "/" + str(crystalType) + ".png")
+        try:
+           os.remove("../public/" + str(tmpFolder) + "/" + str(crystalType) + ".png")
+        except OSError:
+           pass
+        plt.savefig("../public/" + str(tmpFolder) + "/" + str(crystalType) + ".png")
     else:
         plt.show()
 
@@ -615,13 +615,13 @@ def plot2phase(concList = None, valList = None, labelA = None, labelB = None,
     elif type == "youngsMod": saveName = "Youngs_modulus.png"
 
     if saveFig == "True":
-	try:
-	   if tmp == None:
-		plt.savefig("../public/2phase/"+saveName)
-	   else:
-	        plt.savefig("../public/"+tmp+"/2phase/"+saveName)
-	except IOError as e:
-		print("Error: ", e)
+        try:
+            if tmp == None:
+                plt.savefig("../public/2phase/"+saveName)
+            else:
+                plt.savefig("../public/"+tmp+"/2phase/"+saveName)
+        except IOError as e:
+            print("Error: ", e)
     else:
         plt.show()
 

@@ -129,7 +129,7 @@ class cubic(polycrystal):
         self.C12 = C12/100
         self.C44 = C44/100
 
-	correctInput, msg = self.checkCond()
+        correctInput, msg = self.checkCond()
 
         if correctInput == True:
 
@@ -242,14 +242,14 @@ class cubic(polycrystal):
             self.HS_post_shear = GHSp
 
 
-	else:
-	    print('warning' + '<br>')
-	    print(msg)
-	    exit()
+        else:
+            print('warning' + '<br>')
+            print(msg)
+            exit()
 
     def getElasticDict(self):
         mydict = {'C11' : self.C11*100,    # Thanks to Python 3, we do not need to explicitly state "float" in this dict
-                  'C12' : self.C12*100
+                  'C12' : self.C12*100,
                   'C44' : self.C44*100}
         return mydict
 
