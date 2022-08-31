@@ -149,7 +149,7 @@ class cubic(polycrystal):
                                [       0,       0,       0,       0,self.C44,       0],
                                [       0,       0,       0,       0,       0,self.C44]))
 
-            S_cubic = linalg.inv(m_cubic)
+            S_cubic = linalg.inv(np.asarray(m_cubic,dtype=np.float64))
 
             L11 = 0
             L12 = 0
