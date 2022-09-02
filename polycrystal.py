@@ -322,7 +322,7 @@ class tetragonal(polycrystal):
                                     [       0,       0,       0,       0,self.C44,       0],
                                     [       0,       0,       0,       0,       0,self.C66]))
 
-            S_tetragonal = linalg.inv(m_tetragonal)
+            S_tetragonal = linalg.inv(np.asarray(m_tetragonal,dtype=np.float64))
             #        print m_tetragonal
             #        print S_tetragonal
             #        print S_tetragonal [0,5]
@@ -1009,7 +1009,7 @@ class orthorombic(polycrystal):
                                      [       0,       0,       0,       0,self.C55,       0],
                                      [       0,       0,       0,       0,       0,self.C66]))
 
-            S_orthorombic = linalg.inv(m_orthorombic)
+            S_orthorombic = linalg.inv(np.asarray(m_orthorombic,dtype=np.float64))
             #        print m_orthorombic
             #        print S_orthorombic
 
@@ -1128,19 +1128,19 @@ class orthorombic(polycrystal):
             print()
             exit()
 
-def getElasticDict(self):
-    mydict = {'C11' : self.C11*100,    # Thanks to Python 3, we do not need to explicitly state "float"
-              'C12' : self.C12*100,
-              'C13' : self.C13*100,
-              'C22' : self.C22*100,
-              'C23' : self.C23*100,
-              'C33' : self.C33*100,
-              'C44' : self.C44*100,
-              'C55' : self.C55*100,
-              'C66' : self.C66*100}
-    return mydict
+    def getElasticDict(self):
+        mydict = {'C11' : self.C11*100,    # Thanks to Python 3, we do not need to explicitly state "float"
+                  'C12' : self.C12*100,
+                  'C13' : self.C13*100,
+                  'C22' : self.C22*100,
+                  'C23' : self.C23*100,
+                  'C33' : self.C33*100,
+                  'C44' : self.C44*100,
+                  'C55' : self.C55*100,
+                  'C66' : self.C66*100}
+        return mydict
 
-def checkCond(self):
+    def checkCond(self):
         # Check condition
 
         m_orthorombic = Matrix (([self.C11,self.C12,self.C13,       0,       0,       0],
